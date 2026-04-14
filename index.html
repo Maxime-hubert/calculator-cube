@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rubik's Ao5 Predictor</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #121212; color: white; display: flex; justify-content: center; padding-top: 50px; }
+        .container { background: #1e1e1e; padding: 2rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 400px; text-align: center; }
+        h1 { color: #00adb5; margin-bottom: 1.5rem; }
+        input { width: 80%; padding: 12px; border-radius: 5px; border: none; margin-bottom: 10px; font-size: 1.1rem; outline: none; }
+        button { background: #00adb5; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        button:hover { background: #007d82; }
+        .stats { margin-top: 20px; text-align: left; background: #252525; padding: 20px; border-radius: 8px; display: none; line-height: 1.6; }
+        .bpa { color: #4caf50; font-weight: bold; font-size: 1.1rem; }
+        .wpa { color: #f44336; font-weight: bold; font-size: 1.1rem; }
+        .info-text { font-size: 0.85rem; color: #aaa; margin-bottom: 5px; }
+        .history { margin-top: 15px; font-size: 0.9rem; color: #bbb; border-top: 1px dashed #444; padding-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Ao5 Predictor</h1>
+    <input 
+        type="number" 
+        id="timeInput" 
+        step="0.01" 
+        inputmode="decimal" 
+        pattern="[0-9]*" 
+        autocomplete="off" 
+        placeholder="Entrez un temps" 
+        autofocus
+    >
+    <button onclick="addTime()">Ajouter</button>
+
+    <div class="history" id="history">Temps : -</div>
+
+    <div id="statsBox" class="stats">
+        <div id="predictionZone">
+            <div class="info-text" id="infoBpa"></div>
+            <div class="bpa">BPA : <span id="bpa">-</span></div>
+            <br>
+            <div class="info-text" id="infoWpa"></div>
+            <div class="wpa">WPA : <span id="wpa">-</span></div>
+        </div>
+        
+        <div id="finalZone" style="display:none;">
+            <p>Moyenne Finale (Ao5) : <br><span style="color:#00adb5; font-size: 1.8rem;" id="finalAo5">-</span></p>
+            <button onclick="reset()" style="width:100%; margin-top:10px; background:#444;">Recommencer</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let times = [];
+
+    function addTime() {
+        const input = document.getElementById('timeInput');
+        const val = parseFloat(input.value);
+        
+        if (isNaN(val) || val <= 0) return;
+
+        times.push(val);
+        input.value = '';
+        input.focus();
+        updateUI();
+    }
+
+    function updateUI() {
+        const historyDiv = document.getElementById('history');
+        const statsBox = document.getElementById('statsBox');
+        const bpaSpan = document.getElementById('bpa');
+        const wpaSpan = document.getElementById('wpa');
+        const infoBpa = document.getElementById('infoBpa');
+        const infoWpa = document.getElementById('infoWpa');
+        const finalZone = document.getElementById('finalZone');
+        const predictionZone = document.getElementById('predictionZone');
+        const finalAo5 = document.getElementById('finalAo5');
+
+        historyDiv.innerText = "Temps : " + times.join(" | ");
+
+        if (times.length === 4) {
+            statsBox.style.display = 'block';
+            let sorted = [...times].sort((a, b) => a - b);
+            let best = sorted[0];
+            let worst = sorted[3];
+
+            let bpaVal = (sorted[0] + sorted[1] + sorted[2]) / 3;
+            let wpaVal = (sorted[1] + sorted[2] + sorted[3]) / 3;
+
+            infoBpa.innerText = "Si tu fais mieux que " + worst.toFixed(2) + "s :";
+            bpaSpan.innerText = bpaVal.toFixed(2) + "s";
+
+            infoWpa.innerText = "Si tu fais pire que " + best.toFixed(2) + "s :";
+            wpaSpan.innerText = wpaVal.toFixed(2) + "s";
+        } 
+        
+        else if (times.length === 5) {
+            predictionZone.style.display = 'none';
+            finalZone.style.display = 'block';
+            
+            let sorted = [...times].sort((a, b) => a - b);
+            let avg = (sorted[1] + sorted[2] + sorted[3]) / 3;
+            finalAo5.innerText = avg.toFixed(2) + "s";
+        }
+    }
+
+    function reset() {
+        times = [];
+        document.getElementById('statsBox').style.display = 'none';
+        document.getElementById('finalZone').style.display = 'none';
+        document.getElementById('predictionZone').style.display = 'block';
+        document.getElementById('history').innerText = "Temps : -";
+    }
+
+    document.getElementById('timeInput').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') addTime();
+    });
+</script>
+
+</body>
+</html>
